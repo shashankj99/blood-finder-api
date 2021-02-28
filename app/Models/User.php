@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Lumen\Auth\Authorizable;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract
@@ -19,7 +20,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email',
+        'name', 'mobile', 'username', 'role_id'
     ];
 
     /**
@@ -30,4 +31,44 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $hidden = [
         'password',
     ];
+
+    /**
+     * @return HasOne
+     */
+    public function role()
+    {
+        return $this->hasOne(Role::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function token()
+    {
+        return $this->hasOne(Token::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function otp()
+    {
+        return $this->hasOne(Otp::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function bloodInformation()
+    {
+        return $this->hasOne(BloodInformation::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function donor()
+    {
+        return $this->hasOne(Donor::class);
+    }
 }
