@@ -4,7 +4,7 @@ Blood Finder is one of the microservice project belonging to 'Med-O-Sys'
 
 ## Official Documentation
 
-Documentation for the project will be hosted soon in the website [Lumen website](https://lumen.laravel.com/docs).
+Documentation for the project will be hosted soon in the official website.
 
 ## Security Vulnerabilities
 
