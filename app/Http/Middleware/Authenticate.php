@@ -2,22 +2,24 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Token;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Http\Request;
 
 class Authenticate
 {
     /**
      * The authentication guard factory instance.
      *
-     * @var \Illuminate\Contracts\Auth\Factory
+     * @var Auth
      */
     protected $auth;
 
     /**
      * Create a new middleware instance.
      *
-     * @param  \Illuminate\Contracts\Auth\Factory  $auth
+     * @param Auth $auth
      * @return void
      */
     public function __construct(Auth $auth)
@@ -28,17 +30,33 @@ class Authenticate
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  \Closure  $next
-     * @param  string|null  $guard
      * @return mixed
      */
-    public function handle($request, Closure $next, $guard = null)
+    public function handle($request, Closure $next)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
-        }
+        // get the access token
+        $accessToken = ($request->bearerToken()) ? $request->bearerToken() : $request->access_token;
 
+        // return 401 error if access token is missing
+        if (!$accessToken)
+            return response()->json([
+                'status' => 401,
+                'message' => 'Authorization header parameter is required'
+            ], 401);
+
+        // search for the token in the DB
+        $token = Token::whereToken($accessToken)->first();
+
+        // return unauthorized error if unable to find the token data
+        if (!$token)
+            return response()->json([
+                'status' => 401,
+                'message' => 'Unauthorized'
+            ], 401);
+
+        // return the request
         return $next($request);
     }
 }
