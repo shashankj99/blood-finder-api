@@ -3,18 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Services\AuthService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * @var AuthService
+     */
     protected $authService;
 
+    /**
+     * AuthController constructor.
+     * @param AuthService $authService
+     */
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
     }
 
+    /**
+     * Method to register a new user
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function register(Request $request)
     {
         try {
@@ -36,6 +50,49 @@ class AuthController extends Controller
                 'status' => 422,
                 'errors' => $exception->errors()
             ], 422);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'status' => 500,
+                'message' => $exception->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Method to login the user
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function login(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'mobile' => 'required|numeric|digits:10',
+                'password' => 'required|string'
+            ]);
+
+            $user = $this->authService->login($request);
+
+            if ($user['status'] == 200)
+                return response()->json([
+                    'status' => 200,
+                    'access_token' => $user['access_token']
+                ], 200);
+
+            return response()->json([
+                'status' => $user['status'],
+                'message' => $user['message']
+            ], $user['status']);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'status' => 422,
+                'errors' => $exception->errors()
+            ], 422);
+        } catch (ModelNotFoundException $exception) {
+            return response()->json([
+                'status' => 404,
+                'message' => $exception->getMessage()
+            ], 404);
         } catch (\Exception $exception) {
             return response()->json([
                 'status' => 500,

@@ -11,4 +11,8 @@ $router->get('/', function () use ($router) {
     ], 200);
 });
 
+// registration route
 $router->post('register', ['uses' => 'AuthController@register']);
+
+// login route
+$router->post('login', ['uses' => 'AuthController@login']);
