@@ -76,6 +76,7 @@ class AuthController extends Controller
             if ($user['status'] == 200)
                 return response()->json([
                     'status' => 200,
+                    'message' => $user['message'],
                     'access_token' => $user['access_token']
                 ], 200);
 
@@ -117,7 +118,8 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => $verify
+                'message' => $verify['message'],
+                'access_token' => $verify['access_token']
             ], 200);
         } catch (ValidationException $exception) {
             return response()->json([

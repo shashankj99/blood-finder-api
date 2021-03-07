@@ -93,6 +93,7 @@ class AuthService
 
         return [
             'status' => 200,
+            'message' => 'Logged in successfully',
             'access_token' => $token
         ];
     }
@@ -100,7 +101,7 @@ class AuthService
     /**
      * Method to verify the user
      * @param $request
-     * @return string
+     * @return array
      */
     public function verifyOTP($request)
     {
@@ -118,6 +119,18 @@ class AuthService
         // verify the user
         $otp->user->is_verified = true;
 
+        // if token exist previously delete it
+        if ($otp->user->token)
+            $otp->user->token->delete();
+
+        // generate a new token
+        $token = JWTAuth::fromUser($otp->user);
+
+        // save the token in DB
+        $otp->user->token()->create([
+            'token' => $token
+        ]);
+
         // save the changes
         $otp->user->save();
 
@@ -127,6 +140,9 @@ class AuthService
         // commit the transaction
         DB::commit();
 
-        return 'Verification Successful';
+        return [
+            'message' => 'Verification successful',
+            'access_token' => $token
+        ];
     }
 }
