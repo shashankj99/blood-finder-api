@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Otp;
 use App\Models\Role;
 use App\Models\User;
 use App\Traits\GetUserNameId;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -93,5 +95,38 @@ class AuthService
             'status' => 200,
             'access_token' => $token
         ];
+    }
+
+    /**
+     * Method to verify the user
+     * @param $request
+     * @return string
+     */
+    public function verifyOTP($request)
+    {
+        // get otp
+        $otp = Otp::whereOtp($request->otp)
+            ->first();
+
+        // throw not found error if unable to find the error
+        if (!$otp)
+            throw new ModelNotFoundException('Sorry, The OTP is not valid');
+
+        // start the DB transaction
+        DB::beginTransaction();
+
+        // verify the user
+        $otp->user->is_verified = true;
+
+        // save the changes
+        $otp->user->save();
+
+        // delete the OTP
+        $otp->delete();
+
+        // commit the transaction
+        DB::commit();
+
+        return 'Verification Successful';
     }
 }

@@ -16,3 +16,6 @@ $router->post('register', ['uses' => 'AuthController@register']);
 
 // login route
 $router->post('login', ['uses' => 'AuthController@login']);
+
+// verification route
+$router->post('verify', ['uses' => 'AuthController@verifyOTP']);

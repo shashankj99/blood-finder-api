@@ -100,4 +100,40 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Method to verify the user
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function verifyOTP(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'otp' => 'required|numeric|digits:6'
+            ]);
+
+            $verify = $this->authService->verifyOTP($request);
+
+            return response()->json([
+                'status' => 200,
+                'message' => $verify
+            ], 200);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'status' => 422,
+                'errors' => $exception->errors()
+            ], 422);
+        } catch (ModelNotFoundException $exception) {
+            return response()->json([
+                'status' => 404,
+                'message' => $exception->getMessage()
+            ], 404);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'status' => 500,
+                'message' => $exception->getMessage()
+            ], 500);
+        }
+    }
 }
