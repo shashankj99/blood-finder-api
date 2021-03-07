@@ -62,6 +62,13 @@ class AuthService
         if (!$user)
             throw new ModelNotFoundException('Sorry, Unable to find the user');
 
+        // check whether the PW entered by the user matches or not
+        if (!Hash::check($request->password, $user->password))
+            return [
+                'status' => 400,
+                'message' => 'The password was incorrect'
+            ];
+
         // return not verified error if user has not verified their account
         if (!$user->is_verified)
             return [
@@ -69,25 +76,18 @@ class AuthService
                 'message' => 'The user has not verified their account'
             ];
 
-        // check whether the PW entered by the user matches or not
-        if (Hash::check($request->password, $user->password)) {
-            // check if user token exist already
-            if (!empty($user->token))
-                $token = $user->token->token;
-            else {
-                // generate a new token
-                $token = JWTAuth::fromUser($user);
+        // check if user token exist already
+        if (!empty($user->token))
+            $token = $user->token->token;
+        else {
+            // generate a new token
+            $token = JWTAuth::fromUser($user);
 
-                // save the token in the DB
-                $user->token()->create([
-                    'token' => $token
-                ]);
-            }
-        } else
-            return [
-                'status' => 400,
-                'message' => 'The password was incorrect'
-            ];
+            // save the token in the DB
+            $user->token()->create([
+                'token' => $token
+            ]);
+        }
 
         return [
             'status' => 200,
